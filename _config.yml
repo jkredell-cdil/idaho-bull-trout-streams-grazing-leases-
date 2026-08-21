@@ -73,7 +73,7 @@ organization-logo-nav: https://www.lib.uidaho.edu/collectionbuilder/cdil-white.p
 # provide a relative path in this repository or full url 
 lib-assets: /assets/lib
 # ignore stuff
-exclude: [docs/, Rakefile, rakelib/, README.md, LICENSE, CITATION.cff, CODE_OF_CONDUCT.md, CONTRIBUTING.md, SECURITY.md]
+exclude: [docs/, Rakefile, rakelib/, README.md, LICENSE, CITATION.cff, CODE_OF_CONDUCT.md, CONTRIBUTING.md, SECURITY.md, "assets/data/Allotments_with_BullTrout_shapefile.zip", "assets/data/BLM_ID_Grazing_Allotments_shapefile.zip", "assets/data/Generalized_Fish_Distribution-shp.zip"]
 # compress CSS output
 sass:
   style: compressed

@@ -1,5 +1,5 @@
 field,display_name,search
-date,Date,true
-creator,Creator,true
-subject,Subjects,true
-location,Location,true
+admin_unit,Administrative Unit,true
+gis_acres,Acres,false
+num_bull_trout_streams,Bull Trout Streams,false
+bull_trout_stream_names,Stream Names,true

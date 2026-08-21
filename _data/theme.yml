@@ -58,6 +58,8 @@ map-search: true # not suggested with large collections
 map-search-fuzziness: 0.35 # fuzzy search range from 1 = anything to 0 = exact match only
 map-cluster: true # suggested for large collection or with many items in same location
 map-cluster-radius: 25 # size of clusters, from ~ 10 to 80
+map-allotment-boundaries: true # overlay allotment boundary polygons from assets/data/allotments-with-bulltrout.geojson
+map-stream-lines: true # overlay bull trout stream lines from assets/data/BullTrout_Streams_in_Allotments_arc.geojson
 
 ##########
 # TIMELINE PAGE

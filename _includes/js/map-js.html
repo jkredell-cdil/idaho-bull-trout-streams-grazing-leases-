@@ -63,7 +63,7 @@
         "Esri Imagery": Esri_WorldImagery,
         "Open Street Map": OpenStreetMap_Mapnik
     };
-    L.control.layers(baseMaps).addTo(map);
+    var layersControl = L.control.layers(baseMaps).addTo(map);
     /* load base map */
     {{ site.data.theme.map-base | default: 'Esri_WorldStreetMap' }}.addTo(map);
 
@@ -151,6 +151,60 @@
         pointToLayer: objectMarkers
     }){% if site.data.theme.map-cluster != true %}.addTo(map);{% else %};
     map.addLayer(markers);{% endif %}
+
+    {% if site.data.theme.map-allotment-boundaries == true or site.data.theme.map-stream-lines == true %}
+    /* title -> objectid lookup, used to link stream/allotment overlay popups back to item pages */
+    var allotmentLookup = {
+        {% for item in items %}{{ item.title | jsonify }}: {{ item.objectid | jsonify }}{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+    };
+    {% endif %}
+
+    {% if site.data.theme.map-allotment-boundaries == true %}
+    /* allotment boundary polygons, from assets/data/allotments-with-bulltrout.geojson */
+    fetch({{ '/assets/data/allotments-with-bulltrout.geojson' | relative_url | jsonify }})
+        .then(response => response.json())
+        .then(data => {
+            var allotmentLayer = L.geoJson(data, {
+                style: { color: '#2b6cb0', weight: 1.5, fillColor: '#63b3ed', fillOpacity: 0.15 },
+                onEachFeature: function(feature, layer) {
+                    var props = feature.properties;
+                    var itemHref = `{{ '/items/' | relative_url }}allot_id${props.ALLOT_NO}.html`;
+                    var popup = '<h2 class="h5"><a href="' + itemHref + '">' + props.ALLOT_NAME + '</a></h2>' +
+                        '<p><strong>Acres:</strong> ' + Math.round(props.GIS_ACRES) + '<br>' +
+                        '<strong>Bull Trout Streams:</strong> ' + props.BT_STREAMS + '</p>' +
+                        '<div class="text-center"><a class="btn btn-light btn-sm" href="' + itemHref + '">View Item</a></div>';
+                    layer.bindPopup(popup);
+                }
+            });
+            layersControl.addOverlay(allotmentLayer, 'Allotment Boundaries');
+            allotmentLayer.addTo(map);
+        });
+    {% endif %}
+
+    {% if site.data.theme.map-stream-lines == true %}
+    /* bull trout stream lines, from assets/data/BullTrout_Streams_in_Allotments_arc.geojson */
+    fetch({{ '/assets/data/BullTrout_Streams_in_Allotments_arc.geojson' | relative_url | jsonify }})
+        .then(response => response.json())
+        .then(data => {
+            var streamLayer = L.geoJson(data, {
+                style: { color: '#c53030', weight: 3 },
+                onEachFeature: function(feature, layer) {
+                    var props = feature.properties;
+                    var allotNames = (props.ALLOTMENTS || '').split(',').map(n => n.trim()).filter(Boolean);
+                    var allotLinks = allotNames.map(function(name) {
+                        var id = allotmentLookup[name];
+                        return id ? '<a href="' + `{{ '/items/' | relative_url }}${id}.html` + '">' + name + '</a>' : name;
+                    }).join(', ');
+                    var popup = '<h2 class="h5">' + props.NAME + '</h2>' +
+                        '<p><strong>Allotments:</strong> ' + (allotLinks || 'None') + '</p>';
+                    layer.bindPopup(popup);
+                }
+            });
+            layersControl.addOverlay(streamLayer, 'Bull Trout Streams');
+            streamLayer.addTo(map);
+        });
+    {% endif %}
 
     {% if site.data.theme.auto-center-map == true %}
     /* if no location was specified in the URL query parameters, auto center the map */
