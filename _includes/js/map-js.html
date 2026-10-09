@@ -12,6 +12,7 @@
 <script src="{{ site.lib-assets | default: '/assets/lib' | relative_url }}/leaflet/leaflet.fusesearch.js"></script>{% endif %}
 {% if site.data.theme.map-cluster == true %}<script src="{{ site.lib-assets | default: '/assets/lib' | relative_url }}/leaflet/leaflet.markercluster.js"></script>{% endif %}
 {% if site.data.theme.map-search == true and site.data.theme.map-cluster == true %}<script src="{{ site.lib-assets | default: '/assets/lib' | relative_url }}/leaflet/leaflet.markercluster.freezable.js"></script>{% endif %}
+<script src="{{ '/assets/js/wind-drift.js' | relative_url }}"></script>
 
 <script>
 (function(){
@@ -253,7 +254,8 @@
         });
         {% endif %}
     }
-
+    /* wind drift: Release / Regather buttons */
+    initWindDrift(map, mapFeatures, {% if site.data.theme.map-cluster == true %}markers{% else %}null{% endif %}, { speedFactor: 2 });
 })();
 
 </script>
