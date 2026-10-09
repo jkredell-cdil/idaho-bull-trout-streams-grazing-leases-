@@ -13,7 +13,8 @@
  *
  * Usage (inside the map script, after the map and markers exist):
  *   initWindDrift(map, mapFeatures, markers, { speedFactor: 2 });
- * Speed adapts to zoom and map height by default; see timeLapse below.
+ * Pins move at a fixed ground speed (like real smoke), so they look slow when
+ * zoomed out and fast when zoomed in. See speedFactor and timeLapse below.
  * Pass null instead of `markers` if clustering is turned off.
  */
 (function (global) {
@@ -22,16 +23,10 @@
   var DEFAULTS = {
     // Multiple of real smoke-drift speed. Smoke is carried at roughly wind speed.
     speedFactor: 2,
-    // Seconds of real drift shown per second on screen.
-    //   'auto' (default) = adapts to zoom level and map height so on-screen
-    //                      speed stays about the same at any zoom.
-    //   a number         = fixed: 1 = true real time, 3600 = one hour per second.
-    timeLapse: 'auto',
-    // With 'auto': seconds for a typical 5 m/s breeze (at speedFactor 1) to carry
-    // a pin the full height of the map. speedFactor 2 halves this.
-    crossSeconds: 60,
-    // With 'auto': never run slower than real time (matters at street-level zoom).
-    minTimeLapse: 1,
+    // Seconds of real drift shown per second on screen. Fixed, independent of zoom.
+    //   1    = true real time (motion only visible at street-level zoom)
+    //   3600 = one hour of drift per second
+    timeLapse: 3600,
     // 'live' = Open-Meteo current winds; 'prevailing' = climatological wind belts only.
     windSource: 'live',
     gridSize: 6,          // live wind sampled on a gridSize x gridSize grid
@@ -176,17 +171,6 @@
     document.head.appendChild(el);
   }
 
-  var REF_WIND = 5; // m/s, a typical breeze, used to size 'auto' speed
-
-  // Seconds of real drift per screen second for the map's current zoom and height.
-  function effectiveTimeLapse(map, opts) {
-    if (typeof opts.timeLapse === 'number') return opts.timeLapse;
-    var lat = map.getCenter().lat;
-    var metresPerPx = 156543.03392 * Math.cos(lat * Math.PI / 180) / Math.pow(2, map.getZoom());
-    var pxPerSec = map.getSize().y / Math.max(1, opts.crossSeconds);
-    return Math.max(opts.minTimeLapse, (pxPerSec * metresPerPx) / REF_WIND);
-  }
-
   function describeSpeed(opts, timeLapse) {
     var t = Math.round(timeLapse), lapse;
     if (t <= 1) return opts.speedFactor + '\u00d7 real smoke speed';
@@ -211,14 +195,7 @@
     var state = 'home'; // 'home' | 'drifting' | 'returning'
     var rafId = null, lastT = null, lastCheck = 0, driftLayer = null, attributed = false;
     var btnRelease, btnRegather, statusEl;
-    var lapse = effectiveTimeLapse(map, opts);
-
-    // Re-size the speed whenever the zoom, map height or centre latitude changes.
-    function recalc() {
-      lapse = effectiveTimeLapse(map, opts);
-      updateStatus();
-    }
-    map.on('zoomend resize moveend', recalc);
+    var lapse = Math.max(0, Number(opts.timeLapse) || 1); // fixed: same ground speed at every zoom
 
     injectStyles();
 
