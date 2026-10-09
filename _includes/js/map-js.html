@@ -255,7 +255,7 @@
         {% endif %}
     }
     /* wind drift: Release / Regather buttons */
-    initWindDrift(map, mapFeatures, {% if site.data.theme.map-cluster == true %}markers{% else %}null{% endif %}, { speedFactor: 2 });
+    initWindDrift(map, mapFeatures, {% if site.data.theme.map-cluster == true %}markers{% else %}null{% endif %}, { speedFactor: 2, timeLapse: 60 });
 })();
 
 </script>
